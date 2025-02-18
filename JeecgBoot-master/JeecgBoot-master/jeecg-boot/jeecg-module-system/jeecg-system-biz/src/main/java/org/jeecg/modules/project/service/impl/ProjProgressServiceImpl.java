@@ -24,6 +24,9 @@ public class ProjProgressServiceImpl extends ServiceImpl<ProjProgressMapper, Pro
     @Autowired
     private IProjBasicInfoService projBasicInfoService;
 
+    @Autowired
+    private IProjActivityMonitorService activityMonitorService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean updateActiveTime(String projectId) {
@@ -38,5 +41,51 @@ public class ProjProgressServiceImpl extends ServiceImpl<ProjProgressMapper, Pro
         basicInfo.setId(projectId);
         basicInfo.setLastActiveTime(new Date());
         return projBasicInfoService.updateById(basicInfo);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateProgressDescription(String projectId, String description, String operator) {
+        ProjProgress progress = this.getById(projectId);
+        if (progress == null) {
+            progress = new ProjProgress();
+            progress.setProjectId(projectId);
+        }
+        
+        progress.setProgressDescription(description);
+        progress.setLastActiveTime(new Date());
+        progress.setActivityStatus("1"); // 设置为活跃状态
+        
+        boolean success = this.saveOrUpdate(progress);
+        
+        if (success) {
+            // 记录活跃度
+            activityMonitorService.recordProjectUpdate(projectId, "2", "更新项目进展描述", operator);
+        }
+        
+        return success;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateVisualProgress(String projectId, Integer percentage, String operator) {
+        ProjProgress progress = this.getById(projectId);
+        if (progress == null) {
+            progress = new ProjProgress();
+            progress.setProjectId(projectId);
+        }
+        
+        progress.setVisualProgress(percentage);
+        progress.setLastActiveTime(new Date());
+        progress.setActivityStatus("1"); // 设置为活跃状态
+        
+        boolean success = this.saveOrUpdate(progress);
+        
+        if (success) {
+            // 记录活跃度
+            activityMonitorService.recordProjectUpdate(projectId, "3", "更新形象进度：" + percentage + "%", operator);
+        }
+        
+        return success;
     }
 }

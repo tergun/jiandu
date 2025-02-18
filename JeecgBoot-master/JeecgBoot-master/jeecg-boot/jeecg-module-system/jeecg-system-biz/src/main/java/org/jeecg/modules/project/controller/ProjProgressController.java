@@ -53,6 +53,75 @@ public class ProjProgressController extends JeecgController<ProjProgress, IProjP
     }
 
     /**
+     * 更新项目进展描述
+     */
+    @AutoLog(value = "项目进度-更新进展描述")
+    @ApiOperation(value="项目进度-更新进展描述", notes="项目进度-更新进展描述")
+    @PostMapping(value = "/updateDescription")
+    @RequiresPermissions("project:progress:edit")
+    public Result<?> updateDescription(@RequestParam(name="projectId",required=true) String projectId,
+                                     @RequestParam(name="description",required=true) String description,
+                                     HttpServletRequest req) {
+        String username = req.getRemoteUser();
+        boolean success = projProgressService.updateProgressDescription(projectId, description, username);
+        return success ? Result.OK("更新成功！") : Result.error("更新失败！");
+    }
+
+    /**
+     * 更新形象进度
+     */
+    @AutoLog(value = "项目进度-更新形象进度")
+    @ApiOperation(value="项目进度-更新形象进度", notes="项目进度-更新形象进度")
+    @PostMapping(value = "/updateVisualProgress")
+    @RequiresPermissions("project:progress:edit")
+    public Result<?> updateVisualProgress(@RequestParam(name="projectId",required=true) String projectId,
+                                        @RequestParam(name="percentage",required=true) Integer percentage,
+                                        HttpServletRequest req) {
+        if (percentage < 0 || percentage > 100) {
+            return Result.error("进度百分比必须在0-100之间！");
+        }
+        
+        String username = req.getRemoteUser();
+        boolean success = projProgressService.updateVisualProgress(projectId, percentage, username);
+        return success ? Result.OK("更新成功！") : Result.error("更新失败！");
+    }
+
+    /**
+     * 导出excel
+     */
+    @RequestMapping(value = "/exportXls")
+    @RequiresPermissions("project:progress:exportXls")
+    public ModelAndView exportXls(HttpServletRequest request, ProjProgress projProgress) {
+        return super.exportXls(request, projProgress, ProjProgress.class, "项目进度");
+    }
+
+    /**
+     * 通过excel导入数据
+     */
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    @RequiresPermissions("project:progress:importExcel")
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        return super.importExcel(request, response, ProjProgress.class);
+    }
+
+    /**
+     * 分页列表查询
+     */
+    @AutoLog(value = "项目进度-分页列表查询")
+    @ApiOperation(value="项目进度-分页列表查询", notes="项目进度-分页列表查询")
+    @GetMapping(value = "/list")
+    @RequiresPermissions("project:progress:list")
+    public Result<?> queryPageList(ProjProgress projProgress,
+                                 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+                                 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+                                 HttpServletRequest req) {
+        QueryWrapper<ProjProgress> queryWrapper = QueryGenerator.initQueryWrapper(projProgress, req.getParameterMap());
+        Page<ProjProgress> page = new Page<>(pageNo, pageSize);
+        IPage<ProjProgress> pageList = projProgressService.page(page, queryWrapper);
+        return Result.OK(pageList);
+    }
+
+    /**
      * 添加
      */
     @AutoLog(value = "项目进度-添加")

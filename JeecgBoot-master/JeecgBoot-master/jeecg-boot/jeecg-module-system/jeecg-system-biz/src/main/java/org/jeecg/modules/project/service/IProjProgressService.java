@@ -16,4 +16,22 @@ public interface IProjProgressService extends IService<ProjProgress> {
      * @return boolean
      */
     boolean updateActiveTime(String projectId);
+
+    /**
+     * 更新项目进展描述
+     * @param projectId 项目ID
+     * @param description 进展描述
+     * @param operator 操作人
+     * @return boolean
+     */
+    boolean updateProgressDescription(String projectId, String description, String operator);
+
+    /**
+     * 更新形象进度
+     * @param projectId 项目ID
+     * @param percentage 进度百分比
+     * @param operator 操作人
+     * @return boolean
+     */
+    boolean updateVisualProgress(String projectId, Integer percentage, String operator);
 }
